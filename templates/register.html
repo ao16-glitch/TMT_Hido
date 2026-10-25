@@ -1,14 +1,14 @@
 {% extends "base.html" %}
 
-{% block title %}Регистрация - Hido{% endblock %}
+{% block title %}Sign up - Hido{% endblock %}
 
 {% block content %}
 <div class="auth-wrapper">
     <div class="auth-card">
         <div class="auth-header">
             <i class="bi bi-person-plus auth-icon"></i>
-            <h2>Создать аккаунт</h2>
-            <p>Присоединяйтесь к Hido</p>
+            <h2>Create an account</h2>
+            <p>Join Hido</p>
         </div>
 
         {% with messages = get_flashed_messages(with_categories=true) %}
@@ -24,27 +24,27 @@
 
         <form method="POST" action="{{ url_for('register') }}" class="auth-form">
             <div class="form-floating mb-3">
-                <input type="text" class="form-control" id="username" name="username" placeholder="Имя пользователя" required>
-                <label for="username"><i class="bi bi-person"></i> Имя пользователя (мин. 3 символа)</label>
+                <input type="text" class="form-control" id="username" name="username" placeholder="Username" required>
+                <label for="username"><i class="bi bi-person"></i> Username (min. 3 characters)</label>
             </div>
             <div class="form-floating mb-3">
                 <input type="email" class="form-control" id="email" name="email" placeholder="Email" required>
                 <label for="email"><i class="bi bi-envelope"></i> Email</label>
             </div>
             <div class="form-floating mb-3">
-                <input type="password" class="form-control" id="password" name="password" placeholder="Пароль" required>
-                <label for="password"><i class="bi bi-lock"></i> Пароль (мин. 4 символа)</label>
+                <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
+                <label for="password"><i class="bi bi-lock"></i> Password (min. 4 characters)</label>
             </div>
             <div class="form-floating mb-3">
-                <input type="password" class="form-control" id="confirm_password" name="confirm_password" placeholder="Подтвердите пароль" required>
-                <label for="confirm_password"><i class="bi bi-shield-lock"></i> Подтвердите пароль</label>
+                <input type="password" class="form-control" id="confirm_password" name="confirm_password" placeholder="Confirm password" required>
+                <label for="confirm_password"><i class="bi bi-shield-lock"></i> Confirm password</label>
             </div>
-            <button type="submit" class="btn btn-success w-100 py-2">Зарегистрироваться</button>
+            <button type="submit" class="btn btn-success w-100 py-2">Sign up</button>
         </form>
 
         <div class="auth-footer">
-            <p>Уже есть аккаунт? <a href="{{ url_for('login') }}">Войдите</a></p>
-            <a href="{{ url_for('index') }}" class="back-link">← Вернуться на сайт</a>
+            <p>Already have an account? <a href="{{ url_for('login') }}">Log in</a></p>
+            <a href="{{ url_for('index') }}" class="back-link">← Back to site</a>
         </div>
     </div>
 </div>

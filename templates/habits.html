@@ -1,25 +1,24 @@
 {% extends "base.html" %}
 
-{% block title %}Привычки{% endblock %}
+{% block title %}Habits{% endblock %}
 
 {% block content %}
 <div class="row">
     <div class="col-12">
         <div class="card shadow">
             <div class="card-header bg-primary text-white">
-                <h4 class="mb-0"><i class="bi bi-heart"></i> Мои привычки</h4>
+                <h4 class="mb-0"><i class="bi bi-heart"></i> My Habits</h4>
             </div>
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-6">
-                        <h5>Мои активные привычки</h5>
+                        <h5>My active habits</h5>
                         {% if habits %}
                             <ul class="list-group">
                                 {% for habit in habits %}
                                 <li class="list-group-item">
                                     <div class="row align-items-center">
                                         <div class="col-md-5 mb-2 mb-md-0">
-                                            <!-- Название + Lottie рядом -->
                                             <div class="d-flex align-items-center gap-2">
                                                 <strong>{{ habit.title }}</strong>
 
@@ -42,20 +41,19 @@
                                                   action="{{ url_for('complete_habit', habit_id=habit.id) }}"
                                                   class="row g-2 align-items-center">
                                                 <div class="col-sm-6 col-md-5">
-                                                    <input type="text" name="note" placeholder="Заметка" class="form-control form-control-sm">
+                                                    <input type="text" name="note" placeholder="Note" class="form-control form-control-sm">
                                                 </div>
                                                 <div class="col-sm-4 col-md-4">
-                                                    <!-- ЗВУК: onclick на кнопке -->
                                                     <button type="submit"
                                                             class="btn btn-sm btn-success w-100"
                                                             onclick="playNotificationSound();">
-                                                        <i class="bi bi-check-lg"></i> Выполнить
+                                                        <i class="bi bi-check-lg"></i> Complete
                                                     </button>
                                                 </div>
                                                 <div class="col-sm-2 col-md-3">
                                                     <a href="{{ url_for('delete_habit', habit_id=habit.id) }}"
                                                        class="btn btn-sm btn-outline-danger w-100"
-                                                       onclick="return confirm('Удалить привычку «{{ habit.title }}»?')">
+                                                       onclick="return confirm('Delete habit «{{ habit.title }}»?')">
                                                         <i class="bi bi-trash"></i>
                                                     </a>
                                                 </div>
@@ -66,11 +64,11 @@
                                 {% endfor %}
                             </ul>
                         {% else %}
-                            <p>У вас нет привычек. Добавьте готовые или создайте свою.</p>
+                            <p>You have no habits yet. Add a preset or create your own.</p>
                         {% endif %}
                     </div>
                     <div class="col-md-6">
-                        <h5>Готовые привычки по категориям</h5>
+                        <h5>Preset habits by category</h5>
                         {% for cat, items in categories.items() %}
                             <div class="card mt-2">
                                 <div class="card-header bg-secondary text-white">{{ cat|capitalize }}</div>
@@ -79,8 +77,8 @@
                                         <form method="POST" action="{{ url_for('add_habit_predefined') }}" class="d-inline">
                                             <input type="hidden" name="title" value="{{ item }}">
                                             <input type="hidden" name="category" value="{{ cat }}">
-                                            <input type="hidden" name="difficulty" value="средний">
-                                            <input type="hidden" name="period" value="неделя">
+                                            <input type="hidden" name="difficulty" value="medium">
+                                            <input type="hidden" name="period" value="week">
                                             <button type="submit" class="btn btn-sm btn-outline-primary mb-1">+ {{ item }}</button>
                                         </form>
                                     {% endfor %}
@@ -90,40 +88,40 @@
                     </div>
                 </div>
                 <hr>
-                <h5>Создать свою привычку</h5>
+                <h5>Create your own habit</h5>
                 <form method="POST" action="{{ url_for('add_custom_habit') }}">
                     <div class="row">
-                        <div class="col-md-4"><input type="text" name="title" class="form-control" placeholder="Название" required></div>
+                        <div class="col-md-4"><input type="text" name="title" class="form-control" placeholder="Title" required></div>
                         <div class="col-md-3">
                             <select name="category" class="form-select">
-                                <option value="умные привычки">Умные привычки</option>
-                                <option value="продуктивность">Продуктивность</option>
-                                <option value="личное развитие">Личное развитие</option>
-                                <option value="спорт">Спорт</option>
-                                <option value="финансы">Финансы</option>
-                                <option value="домашние дела">Домашние дела</option>
-                                <option value="здоровье">Здоровье</option>
+                                <option value="smart habits">Smart habits</option>
+                                <option value="productivity">Productivity</option>
+                                <option value="personal growth">Personal growth</option>
+                                <option value="sport">Sport</option>
+                                <option value="finance">Finance</option>
+                                <option value="housework">Housework</option>
+                                <option value="health">Health</option>
                             </select>
                         </div>
                         <div class="col-md-2">
                             <select name="difficulty" class="form-select">
-                                <option value="легкий">Легкий (+5 монет)</option>
-                                <option value="средний" selected>Средний (+10 монет)</option>
-                                <option value="тяжелый">Тяжелый (+20 монет)</option>
+                                <option value="easy">Easy (+5 coins)</option>
+                                <option value="medium" selected>Medium (+10 coins)</option>
+                                <option value="hard">Hard (+20 coins)</option>
                             </select>
                         </div>
                         <div class="col-md-2">
                             <select name="period" class="form-select">
-                                <option value="неделя">Неделя</option>
-                                <option value="месяц">Месяц</option>
-                                <option value="3 месяца">3 месяца</option>
-                                <option value="6 месяцев">6 месяцев</option>
+                                <option value="week">Week</option>
+                                <option value="month">Month</option>
+                                <option value="3 months">3 months</option>
+                                <option value="6 months">6 months</option>
                             </select>
                         </div>
                         <div class="col-md-1"><button type="submit" class="btn btn-success w-100">+</button></div>
                     </div>
                     <div class="mt-2">
-                        <label>Дни выполнения (через запятую: mon,tue,wed,thu,fri,sat,sun) или оставьте пустым для всех</label>
+                        <label>Days (comma-separated: mon,tue,wed,thu,fri,sat,sun) or leave blank for all</label>
                         <input type="text" name="weekdays" class="form-control" placeholder="mon,tue,wed,thu,fri">
                     </div>
                 </form>

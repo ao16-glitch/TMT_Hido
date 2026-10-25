@@ -1,25 +1,25 @@
-﻿"""Генерация тестовых данных для сдачи задания A3."""
+﻿"""Generate test data for Assignment A3."""
 import random
 from datetime import date, timedelta, datetime
 from app import app
 from models import db, User, Todo, Habit, HabitCompletion, StudyGoal, StudySession, Notification
 
 
-CATEGORIES = ['Учеба', 'Работа', 'Дом', 'Здоровье', 'Семья', 'Другое']
+CATEGORIES = ['Study', 'Work', 'Home', 'Health', 'Family', 'Other']
 PRIORITIES = [1, 2, 3]
 HABIT_TITLES = [
-    'Утренняя зарядка', 'Чтение 30 минут', 'Медитация', 'Планирование дня',
-    'Прогулка', 'Вода 2л', 'Дневник', 'Изучение английского', 'Йога',
-    'Отказ от соцсетей 2ч', 'Дыхательная гимнастика', 'Растяжка',
+    'Morning exercise', 'Read 30 min', 'Meditation', 'Daily planning',
+    'Walk', 'Water 2L', 'Journal', 'Learn English', 'Yoga',
+    'No social media 2h', 'Breathing exercise', 'Stretching',
 ]
-HABIT_CATEGORIES = ['спорт', 'личное развитие', 'умные привычки', 'продуктивность', 'здоровье']
-DIFFICULTIES = ['легкий', 'средний', 'тяжелый']
-GOAL_TITLES = ['Математика', 'Программирование', 'Английский', 'Физика', 'История']
+HABIT_CATEGORIES = ['sport', 'personal growth', 'smart habits', 'productivity', 'health']
+DIFFICULTIES = ['easy', 'medium', 'hard']
+GOAL_TITLES = ['Math', 'Programming', 'English', 'Physics', 'History']
 NOTIF_TYPES = ['deadline', 'habit_reminder']
 
 
 with app.app_context():
-    print("Очистка старых тестовых данных (кроме admin)...")
+    print("Clearing old test data (except admin)...")
     User.query.filter(User.username != 'admin').delete()
     db.session.commit()
     admin = User.query.filter_by(username='admin').first()
@@ -29,28 +29,26 @@ with app.app_context():
         db.session.add(admin)
         db.session.commit()
 
-    print("Создаём пользователей...")
+    print("Creating users...")
     users = [admin]
     for i in range(1, 11):
         u = User(
             username=f'student{i}',
             email=f'student{i}@hido.kz',
-            coins=random.randint(0, 500),
-            productivity_streak=random.randint(0, 30),
         )
         u.set_password('pass1234')
         db.session.add(u)
         users.append(u)
     db.session.commit()
-    print(f"  OK: {len(users)} пользователей")
+    print(f"  OK: {len(users)} users")
 
-    print("Создаём 150 задач...")
+    print("Creating 150 tasks...")
     for i in range(150):
         u = random.choice(users)
         due = date.today() + timedelta(days=random.randint(-20, 30))
         t = Todo(
-            title=f'Задача #{i + 1}: {random.choice(["Сделать", "Завершить", "Проверить", "Подготовить"])} {random.choice(["отчёт", "лабораторную", "проект", "презентацию", "домашку", "эссе"])}',
-            description=f'Описание задачи {i + 1}.',
+            title=f'Task #{i + 1}: {random.choice(["Do", "Finish", "Review", "Prepare"])} {random.choice(["report", "lab", "project", "presentation", "homework", "essay"])}',
+            description=f'Description for task {i + 1}.',
             due_date=due,
             priority=random.choice(PRIORITIES),
             is_done=random.random() < 0.4,
@@ -59,9 +57,9 @@ with app.app_context():
         )
         db.session.add(t)
     db.session.commit()
-    print("  OK: 150 задач")
+    print("  OK: 150 tasks")
 
-    print("Создаём 40 привычек...")
+    print("Creating 40 habits...")
     habits = []
     for i in range(40):
         u = random.choice(users)
@@ -70,16 +68,16 @@ with app.app_context():
             title=f'{random.choice(HABIT_TITLES)} ({i + 1})',
             category=random.choice(HABIT_CATEGORIES),
             difficulty=random.choice(DIFFICULTIES),
-            period=random.choice(['неделя', 'месяц']),
+            period=random.choice(['week', 'month']),
             weekdays='all',
             is_custom=random.random() < 0.5,
         )
         db.session.add(h)
         habits.append(h)
     db.session.commit()
-    print("  OK: 40 привычек")
+    print("  OK: 40 habits")
 
-    print("Создаём 60 записей о выполнении привычек...")
+    print("Creating 60 habit completions...")
     existing_keys = set()
     for i in range(60):
         h = random.choice(habits)
@@ -92,32 +90,31 @@ with app.app_context():
             habit_id=h.id,
             user_id=h.user_id,
             date=d,
-            note=random.choice(['', 'Отлично!', 'Пропустил вчера', 'Продолжаю', '']),
+            note=random.choice(['', 'Great!', 'Missed yesterday', 'Keep going', '']),
         )
         db.session.add(c)
     db.session.commit()
-    print("  OK: выполнений")
+    print("  OK: completions")
 
-    print("Создаём 30 учебных целей...")
+    print("Creating 30 study goals...")
     goals = []
     for i in range(30):
         u = random.choice(users)
         g = StudyGoal(
             user_id=u.id,
-            title=f'{random.choice(GOAL_TITLES)} — цель {i + 1}',
+            title=f'{random.choice(GOAL_TITLES)} — goal {i + 1}',
             daily_target_minutes=random.choice([30, 45, 60, 90, 120]),
             period=random.choice(['daily', 'weekdays', 'weekends']),
         )
         db.session.add(g)
         goals.append(g)
     db.session.commit()
-    print("  OK: 30 целей")
+    print("  OK: 30 goals")
 
-    print("Создаём 70 учебных сессий...")
+    print("Creating 70 study sessions...")
     for i in range(70):
         g = random.choice(goals)
-        started = datetime.now() - timedelta(days=random.randint(0, 14),
-                                             hours=random.randint(0, 23))
+        started = datetime.now() - timedelta(days=random.randint(0, 14), hours=random.randint(0, 23))
         dur = random.choice([600, 1200, 1500, 1800, 2400])
         s = StudySession(
             user_id=g.user_id,
@@ -131,24 +128,24 @@ with app.app_context():
         )
         db.session.add(s)
     db.session.commit()
-    print("  OK: 70 сессий")
+    print("  OK: 70 sessions")
 
-    print("Создаём 50 уведомлений...")
+    print("Creating 50 notifications...")
     for i in range(50):
         u = random.choice(users)
         n = Notification(
             user_id=u.id,
             type=random.choice(NOTIF_TYPES),
-            message=f'Тестовое уведомление #{i + 1} для {u.username}',
+            message=f'Test notification #{i + 1} for {u.username}',
             link='/tasks',
             is_read=random.random() < 0.5,
         )
         db.session.add(n)
     db.session.commit()
-    print("  OK: 50 уведомлений")
+    print("  OK: 50 notifications")
 
     print("")
-    print("ИТОГО В БАЗЕ:")
+    print("TOTAL IN DATABASE:")
     print(f"  users:              {User.query.count()}")
     print(f"  todos:              {Todo.query.count()}")
     print(f"  habits:             {Habit.query.count()}")
@@ -157,4 +154,4 @@ with app.app_context():
     print(f"  study_sessions:     {StudySession.query.count()}")
     print(f"  notifications:      {Notification.query.count()}")
     print("")
-    print("Готово! Открывайте todos.db в DB Browser и делайте скриншоты.")
+    print("Done! Open hido.db in DB Browser and take screenshots.")

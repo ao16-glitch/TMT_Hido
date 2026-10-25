@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Таймер - Hido{% endblock %}
+{% block title %}Timer - Hido{% endblock %}
 
 {% block content %}
 <style>
@@ -11,39 +11,37 @@
 
 <div class="row">
     <div class="col-12">
-        <!-- Статистика -->
         <div class="card shadow mb-4">
             <div class="card-header bg-primary text-white">
-                <h4 class="mb-0"><i class="bi bi-clock-history"></i> Сегодняшний прогресс</h4>
+                <h4 class="mb-0"><i class="bi bi-clock-history"></i> Today's progress</h4>
             </div>
             <div class="card-body">
                 <div class="row text-center">
                     <div class="col-md-3">
-                        <h4>{{ total_study_minutes }} мин</h4>
-                        <small>Выполнено</small>
+                        <h4>{{ total_study_minutes }} min</h4>
+                        <small>Completed</small>
                     </div>
                     <div class="col-md-3">
-                        <h4>{{ total_target_minutes }} мин</h4>
-                        <small>Цель дня</small>
+                        <h4>{{ total_target_minutes }} min</h4>
+                        <small>Daily goal</small>
                     </div>
                     <div class="col-md-3">
                         <h4><span class="badge bg-success fs-3">{{ general_level }}</span></h4>
-                        <small>Уровень концентрации</small>
+                        <small>Focus level</small>
                     </div>
                     <div class="col-md-3">
                         <h4>{{ avg_percent }}%</h4>
-                        <small>Прогресс целей</small>
+                        <small>Goals progress</small>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Список целей -->
         <div class="card shadow">
             <div class="card-header bg-success text-white d-flex justify-content-between">
-                <h4 class="mb-0"><i class="bi bi-bullseye"></i> Мои цели</h4>
+                <h4 class="mb-0"><i class="bi bi-bullseye"></i> My goals</h4>
                 <button class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#addGoalModal">
-                    <i class="bi bi-plus-lg"></i> Добавить цель
+                    <i class="bi bi-plus-lg"></i> Add goal
                 </button>
             </div>
             <div class="card-body">
@@ -61,12 +59,12 @@
                                         <div class="progress-bar bg-info" style="width: {{ goal.percent }}%"></div>
                                     </div>
                                     <div class="d-flex justify-content-between small">
-                                        <span>Выполнено: {{ goal.completed_minutes }} / {{ goal.daily_target_minutes }} мин</span>
-                                        <span>Уровень: <strong>{{ goal.level }}</strong></span>
+                                        <span>Completed: {{ goal.completed_minutes }} / {{ goal.daily_target_minutes }} min</span>
+                                        <span>Level: <strong>{{ goal.level }}</strong></span>
                                     </div>
                                     <div class="mt-2">
                                         <button class="btn btn-sm btn-outline-primary edit-goal" data-id="{{ goal.id }}" data-title="{{ goal.title }}" data-target="{{ goal.daily_target_minutes }}" data-period="{{ goal.period }}"><i class="bi bi-pencil"></i></button>
-                                        <a href="{{ url_for('delete_study_goal', goal_id=goal.id) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Удалить цель?')"><i class="bi bi-trash"></i></a>
+                                        <a href="{{ url_for('delete_study_goal', goal_id=goal.id) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete goal?')"><i class="bi bi-trash"></i></a>
                                     </div>
                                 </div>
                             </div>
@@ -76,8 +74,8 @@
                 {% else %}
                     <div class="text-center py-5">
                         <i class="bi bi-journal-bookmark-fill display-1 text-muted"></i>
-                        <h4>Нет целей</h4>
-                        <p>Добавьте учебную цель, чтобы начать</p>
+                        <h4>No goals</h4>
+                        <p>Add a study goal to get started</p>
                     </div>
                 {% endif %}
             </div>
@@ -85,95 +83,92 @@
     </div>
 </div>
 
-<!-- Модальное окно добавления цели -->
 <div class="modal fade" id="addGoalModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
             <form method="POST" action="{{ url_for('add_study_goal') }}">
                 <div class="modal-header bg-success text-white">
-                    <h5 class="modal-title">Новая учебная цель</h5>
+                    <h5 class="modal-title">New study goal</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label>Название</label>
+                        <label>Title</label>
                         <input type="text" name="title" class="form-control" required>
                     </div>
                     <div class="mb-3">
-                        <label>Ежедневная цель (минуты)</label>
+                        <label>Daily target (minutes)</label>
                         <input type="number" name="daily_target_minutes" class="form-control" value="60" min="1" required>
                     </div>
                     <div class="mb-3">
-                        <label>Период</label>
+                        <label>Period</label>
                         <select name="period" class="form-select">
-                            <option value="daily">Каждый день</option>
-                            <option value="weekdays">По будням</option>
-                            <option value="weekends">По выходным</option>
+                            <option value="daily">Every day</option>
+                            <option value="weekdays">Weekdays</option>
+                            <option value="weekends">Weekends</option>
                         </select>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                    <button type="submit" class="btn btn-success">Сохранить</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">Save</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 
-<!-- Модальное окно редактирования цели -->
 <div class="modal fade" id="editGoalModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
             <form method="POST" id="editGoalForm">
                 <div class="modal-header bg-warning text-dark">
-                    <h5 class="modal-title">Редактировать цель</h5>
+                    <h5 class="modal-title">Edit goal</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <input type="hidden" name="goal_id" id="editGoalId">
                     <div class="mb-3">
-                        <label>Название</label>
+                        <label>Title</label>
                         <input type="text" name="title" id="editTitle" class="form-control" required>
                     </div>
                     <div class="mb-3">
-                        <label>Ежедневная цель (минуты)</label>
+                        <label>Daily target (minutes)</label>
                         <input type="number" name="daily_target_minutes" id="editTarget" class="form-control" required>
                     </div>
                     <div class="mb-3">
-                        <label>Период</label>
+                        <label>Period</label>
                         <select name="period" id="editPeriod" class="form-select">
-                            <option value="daily">Каждый день</option>
-                            <option value="weekdays">По будням</option>
-                            <option value="weekends">По выходным</option>
+                            <option value="daily">Every day</option>
+                            <option value="weekdays">Weekdays</option>
+                            <option value="weekends">Weekends</option>
                         </select>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 
-<!-- Модальное окно таймера -->
 <div class="modal fade" id="timerModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title" id="timerGoalTitle">Таймер</h5>
+                <h5 class="modal-title" id="timerGoalTitle">Timer</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body text-center">
                 <div class="timer-display" id="timerDisplay">25:00</div>
                 <div class="mt-3">
-                    <button class="btn btn-success" id="startTimerBtn"><i class="bi bi-play-fill"></i> Старт</button>
-                    <button class="btn btn-warning" id="pauseTimerBtn" disabled><i class="bi bi-pause-fill"></i> Пауза</button>
-                    <button class="btn btn-danger" id="stopTimerBtn" disabled><i class="bi bi-stop-fill"></i> Закончить</button>
+                    <button class="btn btn-success" id="startTimerBtn"><i class="bi bi-play-fill"></i> Start</button>
+                    <button class="btn btn-warning" id="pauseTimerBtn" disabled><i class="bi bi-pause-fill"></i> Pause</button>
+                    <button class="btn btn-danger" id="stopTimerBtn" disabled><i class="bi bi-stop-fill"></i> Stop</button>
                 </div>
-                <p class="mt-3 text-muted small">Метод Помодоро: 25 минут концентрации → повышает уровень</p>
+                <p class="mt-3 text-muted small">Pomodoro: 25 minutes of focus → increases your level</p>
             </div>
         </div>
     </div>
@@ -247,7 +242,7 @@
             document.getElementById('pauseTimerBtn').disabled = false;
             document.getElementById('stopTimerBtn').disabled = false;
         } else {
-            alert('Ошибка запуска таймера');
+            alert('Timer start error');
         }
     }
 
@@ -271,13 +266,13 @@
         });
         if (resp.ok) {
             if (elapsedSeconds >= 25 * 60) {
-                alert('Отлично! Полная сессия 25 минут. Уровень повышен!');
+                alert('Great! Full 25-minute session. Level up!');
             } else {
-                alert(`Сессия завершена раньше (${Math.floor(elapsedSeconds/60)} мин). Уровень понижен.`);
+                alert(`Session ended early (${Math.floor(elapsedSeconds/60)} min). Level down.`);
             }
             location.reload();
         } else {
-            alert('Ошибка сохранения сессии');
+            alert('Session save error');
         }
     }
 

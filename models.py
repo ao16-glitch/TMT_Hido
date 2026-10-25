@@ -12,8 +12,6 @@ class User(db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(200), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    coins = db.Column(db.Integer, default=100)
-    productivity_streak = db.Column(db.Integer, default=0)
 
     todos = db.relationship('Todo', backref='author', lazy=True, cascade='all, delete-orphan')
     habits = db.relationship('Habit', backref='user', lazy=True, cascade='all, delete-orphan')
@@ -32,12 +30,12 @@ class Todo(db.Model):
     __tablename__ = 'todos'
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
-    description = db.Column(db.Text)
-    due_date = db.Column(db.Date)
+    description = db.Column(db.Text, nullable=True)
+    due_date = db.Column(db.Date, nullable=True)
     priority = db.Column(db.Integer, default=3)
     is_done = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.now)
-    category = db.Column(db.String(50), default='Общие')
+    category = db.Column(db.String(50), default='Other')
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
 
     @property
@@ -53,19 +51,19 @@ class Habit(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     title = db.Column(db.String(100), nullable=False)
     category = db.Column(db.String(50), nullable=False)
-    difficulty = db.Column(db.String(20), default='средний')
-    period = db.Column(db.String(20), default='неделя')
+    difficulty = db.Column(db.String(20), default='medium')
+    period = db.Column(db.String(20), default='week')
     weekdays = db.Column(db.String(100), default='all')
     is_custom = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    def get_coins_reward(self):
-        if self.difficulty == 'легкий':
-            return 10
-        elif self.difficulty == 'средний':
-            return 20
-        else:
-            return 40
+    # ✅ NEW: cascade — при удалении привычки удаляются её выполнения
+    completions = db.relationship(
+        'HabitCompletion',
+        backref='habit',
+        lazy=True,
+        cascade='all, delete-orphan'
+    )
 
 
 class HabitCompletion(db.Model):
@@ -76,7 +74,7 @@ class HabitCompletion(db.Model):
     date = db.Column(db.Date, default=date.today)
     note = db.Column(db.String(200))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    habit = db.relationship('Habit', backref='completions')
+    # ❌ relationship здесь НЕ нужен — backref в Habit.completions
 
 
 class StudyGoal(db.Model):
@@ -101,6 +99,7 @@ class StudySession(db.Model):
     completed_full = db.Column(db.Boolean, default=False)
     date = db.Column(db.Date, default=date.today)
     goal = db.relationship('StudyGoal', backref='sessions')
+
 
 class Notification(db.Model):
     __tablename__ = 'notifications'

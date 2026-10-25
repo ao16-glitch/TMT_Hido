@@ -10,7 +10,6 @@ import os
 import atexit
 from dotenv import load_dotenv
 
-
 load_dotenv()
 
 app = Flask(__name__)
@@ -18,7 +17,7 @@ app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-key-change-me')
 init_database(app)
 
 
-# ---------- ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ----------
+# ---------- HELPER FUNCTIONS ----------
 def is_authenticated():
     return 'user_id' in session
 
@@ -31,14 +30,13 @@ def login_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         if not is_authenticated():
-            flash('Пожалуйста, войдите в систему', 'warning')
+            flash('Please log in', 'warning')
             return redirect(url_for('login'))
         return f(*args, **kwargs)
     return decorated
 
 
 def create_notification(user_id, ntype, message, link=None):
-    """Создаёт уведомление в БД. Дубликаты за день не создаются."""
     today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
     exists = Notification.query.filter(
         Notification.user_id == user_id,
@@ -54,7 +52,7 @@ def create_notification(user_id, ntype, message, link=None):
     return n
 
 
-# ---------- АУТЕНТИФИКАЦИЯ ----------
+# ---------- AUTHENTICATION ----------
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if is_authenticated():
@@ -66,11 +64,10 @@ def login():
         if user and user.check_password(password):
             session['user_id'] = user.id
             session['username'] = user.username
-            session['coins'] = user.coins
-            flash(f'Добро пожаловать, {user.username}!', 'success')
+            flash(f'Welcome, {user.username}!', 'success')
             return redirect(request.args.get('next') or url_for('tasks'))
         else:
-            flash('Неверное имя или пароль', 'danger')
+            flash('Invalid username or password', 'danger')
     return render_template('login.html')
 
 
@@ -85,13 +82,13 @@ def register():
         confirm = request.form.get('confirm_password')
         errors = []
         if len(username) < 3:
-            errors.append('Имя не менее 3 символов')
+            errors.append('Username must be at least 3 characters')
         if User.query.filter_by(username=username).first():
-            errors.append('Имя уже существует')
+            errors.append('Username already exists')
         if User.query.filter_by(email=email).first():
-            errors.append('Email уже используется')
+            errors.append('Email is already in use')
         if password != confirm:
-            errors.append('Пароли не совпадают')
+            errors.append("Passwords don't match")
         if errors:
             for err in errors:
                 flash(err, 'danger')
@@ -100,7 +97,7 @@ def register():
             user.set_password(password)
             db.session.add(user)
             db.session.commit()
-            flash('Регистрация успешна! Теперь войдите.', 'success')
+            flash('Registration successful! Please log in.', 'success')
             return redirect(url_for('login'))
     return render_template('register.html')
 
@@ -108,7 +105,7 @@ def register():
 @app.route('/logout')
 def logout():
     session.clear()
-    flash('Вы вышли из системы', 'info')
+    flash('You have been logged out', 'info')
     return redirect(url_for('login'))
 
 
@@ -124,7 +121,7 @@ def profile():
     return render_template('profile.html', stats=stats, user=user)
 
 
-# ---------- ЗАДАЧИ ----------
+# ---------- TASKS ----------
 @app.route('/')
 def index():
     return redirect(url_for('tasks'))
@@ -170,13 +167,13 @@ def tasks():
 def add_todo():
     title = request.form.get('title', '').strip()
     if not title:
-        flash('Введите название задачи', 'warning')
+        flash('Enter a task title', 'warning')
         return redirect(url_for('tasks'))
     todo = Todo(
         title=title,
         description=request.form.get('description', '').strip(),
         priority=int(request.form.get('priority', 3)),
-        category=request.form.get('category', 'Общие'),
+        category=request.form.get('category', 'Other'),
         user_id=session['user_id']
     )
     due = request.form.get('due_date')
@@ -184,7 +181,7 @@ def add_todo():
         todo.due_date = datetime.strptime(due, '%Y-%m-%d').date()
     db.session.add(todo)
     db.session.commit()
-    flash('Задача добавлена', 'success')
+    flash('Task added', 'success')
     return redirect(url_for('tasks'))
 
 
@@ -193,7 +190,7 @@ def add_todo():
 def toggle_todo(todo_id):
     todo = Todo.query.get_or_404(todo_id)
     if todo.user_id != session['user_id']:
-        flash('Доступ запрещён', 'danger')
+        flash('Access denied', 'danger')
         return redirect(url_for('tasks'))
     todo.is_done = not todo.is_done
     db.session.commit()
@@ -205,7 +202,7 @@ def toggle_todo(todo_id):
 def edit_todo(todo_id):
     todo = Todo.query.get_or_404(todo_id)
     if todo.user_id != session['user_id']:
-        flash('Доступ запрещён', 'danger')
+        flash('Access denied', 'danger')
         return redirect(url_for('tasks'))
     todo.title = request.form.get('title', todo.title)
     todo.description = request.form.get('description', todo.description)
@@ -217,7 +214,7 @@ def edit_todo(todo_id):
     else:
         todo.due_date = None
     db.session.commit()
-    flash('Задача обновлена', 'success')
+    flash('Task updated', 'success')
     return redirect(url_for('tasks'))
 
 
@@ -226,28 +223,28 @@ def edit_todo(todo_id):
 def delete_todo(todo_id):
     todo = Todo.query.get_or_404(todo_id)
     if todo.user_id != session['user_id']:
-        flash('Доступ запрещён', 'danger')
+        flash('Access denied', 'danger')
         return redirect(url_for('tasks'))
     db.session.delete(todo)
     db.session.commit()
-    flash('Задача удалена', 'success')
+    flash('Task deleted', 'success')
     return redirect(url_for('tasks'))
 
 
-# ---------- ПРИВЫЧКИ ----------
+# ---------- HABITS ----------
 @app.route('/habits')
 @login_required
 def habits():
     user = get_current_user()
     user_habits = Habit.query.filter_by(user_id=user.id).all()
     categories = {
-        'умные привычки': ['Медитация', 'Дыхательная гимнастика', 'Визуализация целей', 'Благодарность'],
-        'продуктивность': ['Планирование дня', 'Метод помидора (25 мин)', 'Завершить важную задачу', 'Разбор почты'],
-        'личное развитие': ['Чтение 30 мин', 'Изучение языка', 'Онлайн курс', 'Просмотр лекции'],
-        'спорт': ['Зарядка', 'Йога', 'Бег', 'Тренировка'],
-        'финансы': ['Экономия', 'Учет расходов', 'Откладывание 10%', 'Инвестиции'],
-        'домашние дела': ['Уборка', 'Стирка', 'Приготовить еду', 'Полив цветов'],
-        'здоровье': ['Прогулка', 'Здоровый завтрак', 'Вода 2л', 'Сон 8ч']
+        'smart habits': ['Meditation', 'Breathing exercise', 'Goal visualization', 'Gratitude'],
+        'productivity': ['Daily planning', 'Pomodoro (25 min)', 'Finish an important task', 'Inbox zero'],
+        'personal growth': ['Read 30 min', 'Learn a language', 'Online course', 'Watch a lecture'],
+        'sport': ['Morning exercise', 'Yoga', 'Running', 'Workout'],
+        'finance': ['Save money', 'Track expenses', 'Save 10%', 'Investments'],
+        'housework': ['Cleaning', 'Laundry', 'Cook a meal', 'Water plants'],
+        'health': ['Walk', 'Healthy breakfast', 'Water 2L', 'Sleep 8h']
     }
     return render_template('habits.html', habits=user_habits, categories=categories, today=date.today())
 
@@ -257,8 +254,8 @@ def habits():
 def add_habit_predefined():
     title = request.form.get('title')
     category = request.form.get('category')
-    difficulty = request.form.get('difficulty', 'средний')
-    period = request.form.get('period', 'неделя')
+    difficulty = request.form.get('difficulty', 'medium')
+    period = request.form.get('period', 'week')
     if not Habit.query.filter_by(user_id=session['user_id'], title=title).first():
         habit = Habit(
             user_id=session['user_id'],
@@ -271,9 +268,9 @@ def add_habit_predefined():
         )
         db.session.add(habit)
         db.session.commit()
-        flash('Привычка добавлена', 'success')
+        flash('Habit added', 'success')
     else:
-        flash('Привычка уже есть', 'warning')
+        flash('Habit already exists', 'warning')
     return redirect(url_for('habits'))
 
 
@@ -296,7 +293,7 @@ def add_custom_habit():
     )
     db.session.add(habit)
     db.session.commit()
-    flash('Привычка создана', 'success')
+    flash('Habit created', 'success')
     return redirect(url_for('habits'))
 
 
@@ -305,12 +302,12 @@ def add_custom_habit():
 def complete_habit(habit_id):
     habit = Habit.query.get_or_404(habit_id)
     if habit.user_id != session['user_id']:
-        flash('Доступ запрещён', 'danger')
+        flash('Access denied', 'danger')
         return redirect(url_for('habits'))
     today_date = date.today()
     existing = HabitCompletion.query.filter_by(habit_id=habit.id, date=today_date).first()
     if existing:
-        flash('Вы уже отмечали эту привычку сегодня', 'warning')
+        flash('You have already completed this habit today', 'warning')
         return redirect(url_for('habits'))
     completion = HabitCompletion(
         habit_id=habit.id,
@@ -319,12 +316,8 @@ def complete_habit(habit_id):
         note=request.form.get('note', '')
     )
     db.session.add(completion)
-    user = get_current_user()
-    reward = habit.get_coins_reward()
-    user.coins += reward
-    session['coins'] = user.coins
     db.session.commit()
-    flash(f'Привычка выполнена! +{reward} монет', 'success')
+    flash('Habit completed!', 'success')
     return redirect(url_for('habits'))
 
 
@@ -333,15 +326,15 @@ def complete_habit(habit_id):
 def delete_habit(habit_id):
     habit = Habit.query.get_or_404(habit_id)
     if habit.user_id != session['user_id']:
-        flash('Доступ запрещён', 'danger')
+        flash('Access denied', 'danger')
         return redirect(url_for('habits'))
     db.session.delete(habit)
     db.session.commit()
-    flash('Привычка удалена', 'success')
+    flash('Habit deleted', 'success')
     return redirect(url_for('habits'))
 
 
-# ---------- СТАТИСТИКА ----------
+# ---------- STATISTICS ----------
 @app.route('/habits_stats')
 @login_required
 def habits_stats():
@@ -484,14 +477,14 @@ def weekly_productivity():
     return jsonify({'days': days, 'completions': completions})
 
 
-# ---------- КАЛЕНДАРЬ ЗАДАЧ ----------
+# ---------- CALENDAR ----------
 @app.route('/calendar')
 @login_required
 def calendar():
     return render_template('calendar.html')
 
 
-# ---------- ТАЙМЕР ----------
+# ---------- TIMER ----------
 @app.route('/timer')
 @login_required
 def timer():
@@ -592,7 +585,7 @@ def add_study_goal():
     )
     db.session.add(goal)
     db.session.commit()
-    flash('Цель добавлена', 'success')
+    flash('Goal added', 'success')
     return redirect(url_for('timer'))
 
 
@@ -601,11 +594,11 @@ def add_study_goal():
 def delete_study_goal(goal_id):
     goal = StudyGoal.query.get_or_404(goal_id)
     if goal.user_id != session['user_id']:
-        flash('Доступ запрещён', 'danger')
+        flash('Access denied', 'danger')
         return redirect(url_for('timer'))
     db.session.delete(goal)
     db.session.commit()
-    flash('Цель удалена', 'success')
+    flash('Goal deleted', 'success')
     return redirect(url_for('timer'))
 
 
@@ -614,13 +607,13 @@ def delete_study_goal(goal_id):
 def edit_study_goal(goal_id):
     goal = StudyGoal.query.get_or_404(goal_id)
     if goal.user_id != session['user_id']:
-        flash('Доступ запрещён', 'danger')
+        flash('Access denied', 'danger')
         return redirect(url_for('timer'))
     goal.title = request.form.get('title')
     goal.daily_target_minutes = int(request.form.get('daily_target_minutes', 60))
     goal.period = request.form.get('period', 'daily')
     db.session.commit()
-    flash('Цель обновлена', 'success')
+    flash('Goal updated', 'success')
     return redirect(url_for('timer'))
 
 
@@ -661,7 +654,7 @@ def api_complete_study(session_id):
     return jsonify({'success': True})
 
 
-# ---------- УВЕДОМЛЕНИЯ ----------
+# ---------- NOTIFICATIONS ----------
 @app.route('/notifications')
 @login_required
 def notifications():
@@ -677,7 +670,7 @@ def notifications():
 def mark_notification_read(nid):
     n = Notification.query.get_or_404(nid)
     if n.user_id != session['user_id']:
-        flash('Доступ запрещён', 'danger')
+        flash('Access denied', 'danger')
         return redirect(url_for('notifications'))
     n.is_read = True
     db.session.commit()
@@ -690,7 +683,7 @@ def mark_all_notifications_read():
     Notification.query.filter_by(user_id=session['user_id'], is_read=False)\
         .update({'is_read': True})
     db.session.commit()
-    flash('Все уведомления прочитаны', 'success')
+    flash('All notifications marked as read', 'success')
     return redirect(url_for('notifications'))
 
 
@@ -701,7 +694,7 @@ def api_unread_count():
     return jsonify({'count': cnt})
 
 
-# ---------- НАСТРОЙКИ ПОЧТЫ ----------
+# ---------- MAIL SETTINGS ----------
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
@@ -717,49 +710,40 @@ def send_email(to, subject, body):
         msg = Message(subject, recipients=[to])
         msg.body = body
         mail.send(msg)
-        print(f"✅ Письмо отправлено на {to}")
+        print(f"✅ Email sent to {to}")
     except Exception as e:
-        print(f"❌ Ошибка отправки: {e}")
+        print(f"❌ Send error: {e}")
 
 
-# ---------- ФОНОВЫЕ ЗАДАЧИ ----------
+# ---------- BACKGROUND JOBS ----------
 def check_deadlines():
-    """За 1 день до дедлайна — уведомление в БД и на email."""
     tomorrow = date.today() + timedelta(days=1)
     tasks = Todo.query.filter(Todo.due_date == tomorrow, Todo.is_done == False).all()
-
     for task in tasks:
         user = User.query.get(task.user_id)
         if not user:
             continue
-
         create_notification(
             user_id=user.id,
             ntype='deadline',
-            message=f"Задача «{task.title}» — дедлайн завтра ({tomorrow.strftime('%d.%m.%Y')})",
+            message=f"Task '{task.title}' — deadline tomorrow ({tomorrow.strftime('%d.%m.%Y')})",
             link=url_for('tasks')
         )
-
         if user.email:
-            subject = f"⏰ Напоминание: задача '{task.title}' завтра!"
-            body = f"""Здравствуйте, {user.username}!
-У вас запланирована задача "{task.title}" на завтра ({tomorrow.strftime('%d.%m.%Y')}).
-Категория: {task.category}
-Приоритет: {task.priority}
-Не забудьте выполнить!
+            subject = f"⏰ Reminder: task '{task.title}' is due tomorrow!"
+            body = f"""Hello, {user.username}!
+You have a task "{task.title}" scheduled for tomorrow ({tomorrow.strftime('%d.%m.%Y')}).
+Category: {task.category}
+Priority: {task.priority}
+Don't forget to complete it!
 
-С уважением, Hido."""
+Best regards, Hido."""
             send_email(user.email, subject, body)
 
 
 def check_overdue():
-    """Ежедневно напоминает о просроченных задачах."""
     today = date.today()
-    overdue = Todo.query.filter(
-        Todo.due_date < today,
-        Todo.is_done == False
-    ).all()
-
+    overdue = Todo.query.filter(Todo.due_date < today, Todo.is_done == False).all()
     for task in overdue:
         user = User.query.get(task.user_id)
         if not user:
@@ -767,32 +751,27 @@ def check_overdue():
         create_notification(
             user_id=user.id,
             ntype='deadline',
-            message=f"Просрочена задача «{task.title}» (срок был {task.due_date.strftime('%d.%m.%Y')})",
+            message=f"Overdue task '{task.title}' (due {task.due_date.strftime('%d.%m.%Y')})",
             link=url_for('tasks', filter='overdue')
         )
 
 
 def check_habits_evening():
-    """Вечером напоминает о невыполненных сегодня привычках."""
     today = date.today()
     if datetime.utcnow().hour < 20:
         return
-
     habits = Habit.query.all()
     for habit in habits:
-        done = HabitCompletion.query.filter_by(
-            habit_id=habit.id, date=today
-        ).first()
+        done = HabitCompletion.query.filter_by(habit_id=habit.id, date=today).first()
         if not done:
             create_notification(
                 user_id=habit.user_id,
                 ntype='habit_reminder',
-                message=f"Не забудь выполнить привычку «{habit.title}» сегодня",
+                message=f"Don't forget to complete the habit '{habit.title}' today",
                 link=url_for('habits')
             )
 
 
-# Планировщик — стартуем только в основном процессе
 if os.environ.get('WERKZEUG_RUN_MAIN') == 'true' or not app.debug:
     scheduler = BackgroundScheduler()
     scheduler.add_job(check_deadlines, 'interval', hours=1)

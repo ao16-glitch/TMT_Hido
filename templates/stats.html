@@ -1,67 +1,62 @@
 {% extends "base.html" %}
 
-{% block title %}Статистика - Hido{% endblock %}
+{% block title %}Statistics - Hido{% endblock %}
 
 {% block content %}
 <div class="row">
     <div class="col-12">
-        <!-- Выпадающий список для выбора статистики -->
         <div class="card shadow mb-4">
             <div class="card-header bg-primary text-white">
-                <h4 class="mb-0"><i class="bi bi-bar-chart"></i> Статистика продуктивности</h4>
+                <h4 class="mb-0"><i class="bi bi-bar-chart"></i> Productivity statistics</h4>
             </div>
             <div class="card-body">
                 <div class="mb-4">
-                    <label for="statsType" class="form-label fw-bold">Выберите тип статистики:</label>
+                    <label for="statsType" class="form-label fw-bold">Choose statistics type:</label>
                     <select id="statsType" class="form-select w-auto">
-                        <option value="habits">📊 Привычки</option>
-                        <option value="tasks">✅ Задачи</option>
-                        <option value="timer">⏱️ Таймер (учебные сессии)</option>
-                        <option value="all">🌟 Общая статистика</option>
+                        <option value="habits">📊 Habits</option>
+                        <option value="tasks">✅ Tasks</option>
+                        <option value="timer">⏱️ Timer (study sessions)</option>
+                        <option value="all">🌟 Overall statistics</option>
                     </select>
                 </div>
 
-                <!-- Блок для привычек -->
                 <div id="habitsBlock" class="stats-block">
                     <canvas id="habitChart" width="400" height="200"></canvas>
                     <hr>
                     <div class="row text-center">
-                        <div class="col-4"><h3>{{ total_habit_completed }}</h3><small>✅ Выполнено привычек</small></div>
-                        <div class="col-4"><h3>{{ habit_missed }}</h3><small>❌ Пропущено</small></div>
-                        <div class="col-4"><h3>{{ habit_percent }}%</h3><small>📊 Процент выполнения</small></div>
+                        <div class="col-4"><h3>{{ total_habit_completed }}</h3><small>✅ Habits completed</small></div>
+                        <div class="col-4"><h3>{{ habit_missed }}</h3><small>❌ Missed</small></div>
+                        <div class="col-4"><h3>{{ habit_percent }}%</h3><small>📊 Completion rate</small></div>
                     </div>
                 </div>
 
-                <!-- Блок для задач -->
                 <div id="tasksBlock" class="stats-block" style="display: none;">
                     <canvas id="taskChart" width="400" height="200"></canvas>
                     <hr>
                     <div class="row text-center">
-                        <div class="col-4"><h3>{{ total_tasks_done }}</h3><small>✅ Выполнено задач</small></div>
-                        <div class="col-4"><h3>{{ task_not_done }}</h3><small>❌ Не выполнено</small></div>
-                        <div class="col-4"><h3>{{ task_percent }}%</h3><small>📊 Процент выполнения</small></div>
+                        <div class="col-4"><h3>{{ total_tasks_done }}</h3><small>✅ Tasks completed</small></div>
+                        <div class="col-4"><h3>{{ task_not_done }}</h3><small>❌ Not completed</small></div>
+                        <div class="col-4"><h3>{{ task_percent }}%</h3><small>📊 Completion rate</small></div>
                     </div>
                 </div>
 
-                <!-- Блок для таймера -->
                 <div id="timerBlock" class="stats-block" style="display: none;">
                     <canvas id="timerChart" width="400" height="200"></canvas>
                     <hr>
                     <div class="row text-center">
-                        <div class="col-4"><h3>{{ total_timer_minutes }} мин</h3><small>⏱️ Всего за неделю</small></div>
-                        <div class="col-4"><h3>{{ full_sessions }}</h3><small>✅ Полных сессий (25+ мин)</small></div>
-                        <div class="col-4"><h3>{{ total_goals }}</h3><small>🎯 Активных целей</small></div>
+                        <div class="col-4"><h3>{{ total_timer_minutes }} min</h3><small>⏱️ Total this week</small></div>
+                        <div class="col-4"><h3>{{ full_sessions }}</h3><small>✅ Full sessions (25+ min)</small></div>
+                        <div class="col-4"><h3>{{ total_goals }}</h3><small>🎯 Active goals</small></div>
                     </div>
                 </div>
 
-                <!-- Блок общей статистики -->
                 <div id="allBlock" class="stats-block" style="display: none;">
                     <div class="row text-center">
                         <div class="col-md-4 mb-3">
                             <div class="card bg-light">
                                 <div class="card-body">
                                     <h3>{{ total_habit_completed }}</h3>
-                                    <small>✅ Привычки выполнено</small>
+                                    <small>✅ Habits completed</small>
                                 </div>
                             </div>
                         </div>
@@ -69,15 +64,15 @@
                             <div class="card bg-light">
                                 <div class="card-body">
                                     <h3>{{ total_tasks_done }}</h3>
-                                    <small>✅ Задач выполнено</small>
+                                    <small>✅ Tasks completed</small>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-4 mb-3">
                             <div class="card bg-light">
                                 <div class="card-body">
-                                    <h3>{{ total_timer_minutes }} мин</h3>
-                                    <small>⏱️ Время по таймеру</small>
+                                    <h3>{{ total_timer_minutes }} min</h3>
+                                    <small>⏱️ Time by timer</small>
                                 </div>
                             </div>
                         </div>
@@ -86,7 +81,7 @@
                         <div class="col-md-6 mb-3">
                             <div class="card bg-success text-white">
                                 <div class="card-body">
-                                    <h4>Общая продуктивность</h4>
+                                    <h4>Overall productivity</h4>
                                     {% set total_completed = total_habit_completed + total_tasks_done %}
                                     {% set total_possible = (total_habits * 7) + total_tasks %}
                                     {% if total_possible > 0 %}
@@ -101,8 +96,8 @@
                         <div class="col-md-6 mb-3">
                             <div class="card bg-info text-white">
                                 <div class="card-body">
-                                    <h4>Дисциплина</h4>
-                                    <h2>{{ full_sessions }} полных сессий</h2>
+                                    <h4>Discipline</h4>
+                                    <h2>{{ full_sessions }} full sessions</h2>
                                 </div>
                             </div>
                         </div>
@@ -115,7 +110,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    // Данные для графиков
     const habitLabels = {{ habit_stats|map(attribute='date')|list|tojson }};
     const habitData = {{ habit_stats|map(attribute='completions')|list|tojson }};
     const taskLabels = {{ task_stats|map(attribute='date')|list|tojson }};
@@ -129,19 +123,19 @@
         const ctxHabit = document.getElementById('habitChart').getContext('2d');
         habitChart = new Chart(ctxHabit, {
             type: 'bar',
-            data: { labels: habitLabels, datasets: [{ label: 'Выполненные привычки', data: habitData, backgroundColor: '#4caf50' }] },
+            data: { labels: habitLabels, datasets: [{ label: 'Completed habits', data: habitData, backgroundColor: '#4caf50' }] },
             options: { responsive: true, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
         });
         const ctxTask = document.getElementById('taskChart').getContext('2d');
         taskChart = new Chart(ctxTask, {
             type: 'bar',
-            data: { labels: taskLabels, datasets: [{ label: 'Выполненные задачи', data: taskData, backgroundColor: '#007bff' }] },
+            data: { labels: taskLabels, datasets: [{ label: 'Completed tasks', data: taskData, backgroundColor: '#007bff' }] },
             options: { responsive: true, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
         });
         const ctxTimer = document.getElementById('timerChart').getContext('2d');
         timerChart = new Chart(ctxTimer, {
             type: 'bar',
-            data: { labels: timerLabels, datasets: [{ label: 'Минут учёбы по таймеру', data: timerData, backgroundColor: '#ffc107' }] },
+            data: { labels: timerLabels, datasets: [{ label: 'Study minutes by timer', data: timerData, backgroundColor: '#ffc107' }] },
             options: { responsive: true, scales: { y: { beginAtZero: true, ticks: { stepSize: 10 } } } }
         });
     }

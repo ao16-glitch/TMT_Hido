@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}Привычки{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="bi bi-heart"></i> Мои привычки</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>Мои активные привычки</h5>
+                        {% if habits %}
+                            <ul class="list-group">
+                                {% for habit in habits %}
+                                <li class="list-group-item">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-5 mb-2 mb-md-0">
+                                            <strong>{{ habit.title }}</strong><br>
+                                            <small class="text-muted">{{ habit.category }} • {{ habit.difficulty }} • {{ habit.period }}</small>
+                                        </div>
+                                        <div class="col-md-7">
+                                            <form method="POST" action="{{ url_for('complete_habit', habit_id=habit.id) }}" class="row g-2 align-items-center">
+                                                <div class="col-sm-6 col-md-5">
+                                                    <input type="text" name="note" placeholder="Заметка" class="form-control form-control-sm">
+                                                </div>
+                                                <div class="col-sm-4 col-md-4">
+                                                    <button type="submit" class="btn btn-sm btn-success w-100"><i class="bi bi-check-lg"></i> Выполнить</button>
+                                                </div>
+                                                <div class="col-sm-2 col-md-3">
+                                                    <a href="{{ url_for('delete_habit', habit_id=habit.id) }}" class="btn btn-sm btn-outline-danger w-100" onclick="return confirm('Удалить привычку «{{ habit.title }}»?')">
+                                                        <i class="bi bi-trash"></i>
+                                                    </a>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p>У вас нет привычек. Добавьте готовые или создайте свою.</p>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <h5>Готовые привычки по категориям</h5>
+                        {% for cat, items in categories.items() %}
+                            <div class="card mt-2">
+                                <div class="card-header bg-secondary text-white">{{ cat|capitalize }}</div>
+                                <div class="card-body">
+                                    {% for item in items %}
+                                        <form method="POST" action="{{ url_for('add_habit_predefined') }}" class="d-inline">
+                                            <input type="hidden" name="title" value="{{ item }}">
+                                            <input type="hidden" name="category" value="{{ cat }}">
+                                            <input type="hidden" name="difficulty" value="средний">
+                                            <input type="hidden" name="period" value="неделя">
+                                            <button type="submit" class="btn btn-sm btn-outline-primary mb-1">+ {{ item }}</button>
+                                        </form>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <hr>
+                <h5>Создать свою привычку</h5>
+                <form method="POST" action="{{ url_for('add_custom_habit') }}">
+                    <div class="row">
+                        <div class="col-md-4"><input type="text" name="title" class="form-control" placeholder="Название" required></div>
+                        <div class="col-md-3">
+                            <select name="category" class="form-select">
+                                <option value="умные привычки">Умные привычки</option><option value="продуктивность">Продуктивность</option>
+                                <option value="личное развитие">Личное развитие</option><option value="спорт">Спорт</option>
+                                <option value="финансы">Финансы</option><option value="домашние дела">Домашние дела</option>
+                                <option value="здоровье">Здоровье</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <select name="difficulty" class="form-select">
+                                <option value="легкий">Легкий (+5 монет)</option>
+                                <option value="средний" selected>Средний (+10 монет)</option>
+                                <option value="тяжелый">Тяжелый (+20 монет)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <select name="period" class="form-select">
+                                <option value="неделя">Неделя</option><option value="месяц">Месяц</option>
+                                <option value="3 месяца">3 месяца</option><option value="6 месяцев">6 месяцев</option>
+                            </select>
+                        </div>
+                        <div class="col-md-1"><button type="submit" class="btn btn-success w-100">+</button></div>
+                    </div>
+                    <div class="mt-2">
+                        <label>Дни выполнения (через запятую: mon,tue,wed,thu,fri,sat,sun) или оставьте пустым для всех</label>
+                        <input type="text" name="weekdays" class="form-control" placeholder="mon,tue,wed,thu,fri">
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

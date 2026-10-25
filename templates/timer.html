@@ -1,0 +1,288 @@
+{% extends "base.html" %}
+
+{% block title %}Таймер - Hido{% endblock %}
+
+{% block content %}
+<style>
+    .timer-display { font-size: 3rem; font-family: monospace; text-align: center; }
+    .goal-card { cursor: pointer; transition: 0.2s; }
+    .goal-card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+</style>
+
+<div class="row">
+    <div class="col-12">
+        <!-- Статистика -->
+        <div class="card shadow mb-4">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="bi bi-clock-history"></i> Сегодняшний прогресс</h4>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-3">
+                        <h4>{{ total_study_minutes }} мин</h4>
+                        <small>Выполнено</small>
+                    </div>
+                    <div class="col-md-3">
+                        <h4>{{ total_target_minutes }} мин</h4>
+                        <small>Цель дня</small>
+                    </div>
+                    <div class="col-md-3">
+                        <h4><span class="badge bg-success fs-3">{{ general_level }}</span></h4>
+                        <small>Уровень концентрации</small>
+                    </div>
+                    <div class="col-md-3">
+                        <h4>{{ avg_percent }}%</h4>
+                        <small>Прогресс целей</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Список целей -->
+        <div class="card shadow">
+            <div class="card-header bg-success text-white d-flex justify-content-between">
+                <h4 class="mb-0"><i class="bi bi-bullseye"></i> Мои цели</h4>
+                <button class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#addGoalModal">
+                    <i class="bi bi-plus-lg"></i> Добавить цель
+                </button>
+            </div>
+            <div class="card-body">
+                {% if goals %}
+                    <div class="row">
+                        {% for goal in goals %}
+                        <div class="col-md-6 mb-3">
+                            <div class="card goal-card" data-goal-id="{{ goal.id }}" data-goal-title="{{ goal.title }}" data-goal-target="{{ goal.daily_target_minutes }}">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <h5>{{ goal.title }}</h5>
+                                        <span class="badge bg-secondary">{{ goal.period }}</span>
+                                    </div>
+                                    <div class="progress mb-2">
+                                        <div class="progress-bar bg-info" style="width: {{ goal.percent }}%"></div>
+                                    </div>
+                                    <div class="d-flex justify-content-between small">
+                                        <span>Выполнено: {{ goal.completed_minutes }} / {{ goal.daily_target_minutes }} мин</span>
+                                        <span>Уровень: <strong>{{ goal.level }}</strong></span>
+                                    </div>
+                                    <div class="mt-2">
+                                        <button class="btn btn-sm btn-outline-primary edit-goal" data-id="{{ goal.id }}" data-title="{{ goal.title }}" data-target="{{ goal.daily_target_minutes }}" data-period="{{ goal.period }}"><i class="bi bi-pencil"></i></button>
+                                        <a href="{{ url_for('delete_study_goal', goal_id=goal.id) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Удалить цель?')"><i class="bi bi-trash"></i></a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-journal-bookmark-fill display-1 text-muted"></i>
+                        <h4>Нет целей</h4>
+                        <p>Добавьте учебную цель, чтобы начать</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно добавления цели -->
+<div class="modal fade" id="addGoalModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{{ url_for('add_study_goal') }}">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">Новая учебная цель</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label>Название</label>
+                        <input type="text" name="title" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label>Ежедневная цель (минуты)</label>
+                        <input type="number" name="daily_target_minutes" class="form-control" value="60" min="1" required>
+                    </div>
+                    <div class="mb-3">
+                        <label>Период</label>
+                        <select name="period" class="form-select">
+                            <option value="daily">Каждый день</option>
+                            <option value="weekdays">По будням</option>
+                            <option value="weekends">По выходным</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-success">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно редактирования цели -->
+<div class="modal fade" id="editGoalModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" id="editGoalForm">
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title">Редактировать цель</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="goal_id" id="editGoalId">
+                    <div class="mb-3">
+                        <label>Название</label>
+                        <input type="text" name="title" id="editTitle" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label>Ежедневная цель (минуты)</label>
+                        <input type="number" name="daily_target_minutes" id="editTarget" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label>Период</label>
+                        <select name="period" id="editPeriod" class="form-select">
+                            <option value="daily">Каждый день</option>
+                            <option value="weekdays">По будням</option>
+                            <option value="weekends">По выходным</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно таймера -->
+<div class="modal fade" id="timerModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="timerGoalTitle">Таймер</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <div class="timer-display" id="timerDisplay">25:00</div>
+                <div class="mt-3">
+                    <button class="btn btn-success" id="startTimerBtn"><i class="bi bi-play-fill"></i> Старт</button>
+                    <button class="btn btn-warning" id="pauseTimerBtn" disabled><i class="bi bi-pause-fill"></i> Пауза</button>
+                    <button class="btn btn-danger" id="stopTimerBtn" disabled><i class="bi bi-stop-fill"></i> Закончить</button>
+                </div>
+                <p class="mt-3 text-muted small">Метод Помодоро: 25 минут концентрации → повышает уровень</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentGoalId = null;
+    let currentSessionId = null;
+    let timerInterval = null;
+    let timeLeft = 25 * 60;
+    let isRunning = false;
+
+    document.querySelectorAll('.goal-card').forEach(card => {
+        card.addEventListener('click', (e) => {
+            if (e.target.closest('.edit-goal') || e.target.closest('.btn-outline-danger')) return;
+            currentGoalId = card.dataset.goalId;
+            const title = card.dataset.goalTitle;
+            document.getElementById('timerGoalTitle').innerText = title;
+            resetTimerDisplay();
+            new bootstrap.Modal(document.getElementById('timerModal')).show();
+        });
+    });
+
+    document.querySelectorAll('.edit-goal').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const id = btn.dataset.id;
+            const title = btn.dataset.title;
+            const target = btn.dataset.target;
+            const period = btn.dataset.period;
+            document.getElementById('editGoalId').value = id;
+            document.getElementById('editTitle').value = title;
+            document.getElementById('editTarget').value = target;
+            document.getElementById('editPeriod').value = period;
+            document.getElementById('editGoalForm').action = `/edit_study_goal/${id}`;
+            new bootstrap.Modal(document.getElementById('editGoalModal')).show();
+        });
+    });
+
+    function resetTimerDisplay() {
+        timeLeft = 25 * 60;
+        updateTimerDisplay();
+        if (timerInterval) clearInterval(timerInterval);
+        isRunning = false;
+        document.getElementById('startTimerBtn').disabled = false;
+        document.getElementById('pauseTimerBtn').disabled = true;
+        document.getElementById('stopTimerBtn').disabled = true;
+    }
+
+    function updateTimerDisplay() {
+        const minutes = Math.floor(timeLeft / 60);
+        const seconds = timeLeft % 60;
+        document.getElementById('timerDisplay').innerText = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+
+    async function startTimer() {
+        if (!currentGoalId) return;
+        const resp = await fetch(`/api/start_study/${currentGoalId}`, { method: 'POST' });
+        const data = await resp.json();
+        if (data.session_id) {
+            currentSessionId = data.session_id;
+            isRunning = true;
+            timerInterval = setInterval(() => {
+                if (timeLeft > 0 && isRunning) {
+                    timeLeft--;
+                    updateTimerDisplay();
+                    if (timeLeft === 0) finishTimer(true);
+                }
+            }, 1000);
+            document.getElementById('startTimerBtn').disabled = true;
+            document.getElementById('pauseTimerBtn').disabled = false;
+            document.getElementById('stopTimerBtn').disabled = false;
+        } else {
+            alert('Ошибка запуска таймера');
+        }
+    }
+
+    function pauseTimer() {
+        isRunning = false;
+        if (timerInterval) clearInterval(timerInterval);
+        timerInterval = null;
+        document.getElementById('startTimerBtn').disabled = false;
+        document.getElementById('pauseTimerBtn').disabled = true;
+    }
+
+    async function finishTimer(auto = false) {
+        if (!currentSessionId) return;
+        const elapsedSeconds = 25 * 60 - timeLeft;
+        if (timerInterval) clearInterval(timerInterval);
+        isRunning = false;
+        const resp = await fetch(`/api/complete_study/${currentSessionId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ elapsed_seconds: elapsedSeconds })
+        });
+        if (resp.ok) {
+            if (elapsedSeconds >= 25 * 60) {
+                alert('Отлично! Полная сессия 25 минут. Уровень повышен!');
+            } else {
+                alert(`Сессия завершена раньше (${Math.floor(elapsedSeconds/60)} мин). Уровень понижен.`);
+            }
+            location.reload();
+        } else {
+            alert('Ошибка сохранения сессии');
+        }
+    }
+
+    document.getElementById('startTimerBtn').addEventListener('click', startTimer);
+    document.getElementById('pauseTimerBtn').addEventListener('click', pauseTimer);
+    document.getElementById('stopTimerBtn').addEventListener('click', () => finishTimer(false));
+</script>
+{% endblock %}

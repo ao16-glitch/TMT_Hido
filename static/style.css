@@ -1,0 +1,294 @@
+/* Основные стили */
+body {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    min-height: 100vh;
+    padding-bottom: 50px;
+}
+
+.container {
+    max-width: 1200px;
+}
+
+/* Карточки задач */
+.todo-card {
+    transition: all 0.3s ease;
+    border-left: 4px solid #6c757d;
+}
+
+.todo-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.todo-card.done {
+    background-color: #f8f9fa;
+    border-left-color: #28a745;
+}
+
+.todo-card.overdue {
+    border-left-color: #dc3545;
+    background-color: #fff5f5;
+}
+
+.todo-card.high-priority {
+    border-left-color: #dc3545;
+}
+
+.todo-card.medium-priority {
+    border-left-color: #ffc107;
+}
+
+.todo-card.low-priority {
+    border-left-color: #17a2b8;
+}
+
+/* Приоритеты */
+.priority-badge {
+    font-size: 0.7em;
+    padding: 3px 8px;
+}
+
+/* Категории */
+.category-badge {
+    font-size: 0.75em;
+    background-color: #6c757d;
+    color: white;
+}
+
+/* Анимации */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.todo-item {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* Форма добавления */
+.add-form {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+}
+
+/* Статус задачи */
+.status-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.status-btn:hover {
+    transform: scale(1.1);
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .btn-group {
+        flex-wrap: wrap;
+    }
+    .btn-group .btn {
+        margin-bottom: 5px;
+    }
+    .todo-actions {
+        margin-top: 10px;
+    }
+}
+
+/* Умные фильтры */
+.filter-active {
+    background-color: #007bff !important;
+    color: white !important;
+}
+
+/* Подсветка просроченных */
+.overdue-text {
+    color: #dc3545;
+    font-weight: bold;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+}
+
+/* Иконки */
+.icon {
+    margin-right: 5px;
+}
+
+/* Прогресс-бары (для статистики) */
+.progress {
+    height: 10px;
+    border-radius: 5px;
+    background-color: #e9ecef;
+    overflow: hidden;
+}
+
+.progress-bar {
+    transition: width 0.5s ease;
+}
+
+.progress-bar-custom {
+    transition: width 0.5s ease;
+}
+
+/* Карточки статистики */
+.stats-card {
+    background: white;
+    border-radius: 15px;
+    padding: 15px;
+    text-align: center;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    transition: transform 0.3s;
+}
+
+.stats-card:hover {
+    transform: translateY(-5px);
+}
+
+/* Стили для карточек привычек */
+.habit-category-card {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+/* Кнопки привычек */
+.btn-habit-complete {
+    background-color: #28a745;
+    border: none;
+    transition: all 0.2s;
+}
+.btn-habit-complete:hover {
+    background-color: #218838;
+    transform: scale(1.02);
+}
+
+.list-group-item .d-flex.gap-2 {
+    flex-wrap: nowrap;
+}
+@media (max-width: 768px) {
+    .list-group-item .d-flex.gap-2 {
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        margin-top: 10px;
+    }
+}
+
+/* ===== АУТЕНТИФИКАЦИЯ ===== */
+.auth-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 80vh;
+    padding: 1rem;
+}
+
+.auth-card {
+    background: white;
+    border-radius: 30px;
+    box-shadow: 0 20px 35px rgba(0, 0, 0, 0.2);
+    padding: 2rem;
+    width: 100%;
+    max-width: 480px;
+    transition: transform 0.3s ease;
+}
+
+.auth-card:hover {
+    transform: translateY(-5px);
+}
+
+.auth-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.auth-icon {
+    font-size: 3.5rem;
+    color: #4361ee;
+    background: #eef2ff;
+    padding: 15px;
+    border-radius: 60px;
+    margin-bottom: 1rem;
+}
+
+.auth-header h2 {
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: #2c3e50;
+}
+
+.auth-header p {
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.auth-form .form-floating > label {
+    padding-left: 2.5rem;
+}
+
+.auth-form .form-floating > input {
+    padding-left: 2.5rem;
+}
+
+.auth-form .form-floating i {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    color: #adb5bd;
+}
+
+.auth-footer {
+    text-align: center;
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e9ecef;
+}
+
+.auth-footer p {
+    margin-bottom: 0.5rem;
+}
+
+.back-link {
+    color: #6c757d;
+    text-decoration: none;
+    font-size: 0.85rem;
+    transition: color 0.2s;
+}
+
+.back-link:hover {
+    color: #4361ee;
+}
+
+.navbar .dropdown-item.text-danger {
+    background-color: #fff;
+    transition: all 0.2s;
+}
+
+.navbar .dropdown-item.text-danger:hover {
+    background-color: #dc3545;
+    color: white !important;
+}
+
+@media (max-width: 576px) {
+    .auth-card {
+        padding: 1.5rem;
+    }
+    .auth-icon {
+        font-size: 2.5rem;
+        padding: 12px;
+    }
+}

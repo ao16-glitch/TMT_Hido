@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Календарь задач{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow">
+            <div class="card-header bg-info text-white">
+                <h4 class="mb-0"><i class="bi bi-calendar-event"></i> Календарь задач</h4>
+            </div>
+            <div class="card-body">
+                <div id="calendar" style="min-height: 500px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'></script>
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/locales/ru.js'></script>
+<script>
+    async function loadEvents() {
+        const res = await fetch('/api/todos');
+        const tasks = await res.json();
+        return tasks.filter(t => t.due_date).map(t => ({
+            id: t.id,
+            title: t.title,
+            start: t.due_date,
+            end: t.due_date,
+            backgroundColor: t.is_done ? '#6c757d' : (t.priority===1 ? '#dc3545' : (t.priority===2 ? '#ffc107' : '#28a745')),
+            borderColor: t.is_done ? '#6c757d' : (t.priority===1 ? '#dc3545' : (t.priority===2 ? '#ffc107' : '#28a745')),
+            textColor: '#fff',
+            extendedProps: { description: t.description, category: t.category, priority: t.priority, is_done: t.is_done }
+        }));
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        const events = await loadEvents();
+        const calendarEl = document.getElementById('calendar');
+        const calendar = new FullCalendar.Calendar(calendarEl, {
+            locale: 'ru',
+            initialView: 'dayGridMonth',
+            headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,listWeek' },
+            buttonText: { today: 'Сегодня', month: 'Месяц', week: 'Неделя', list: 'Список' },
+            events: events,
+            eventClick: (info) => {
+                const e = info.event;
+                const props = e.extendedProps;
+                const due = e.start ? new Date(e.start).toLocaleDateString('ru-RU') : 'Нет';
+                const priorityText = props.priority===1?'🔴 Высокий':(props.priority===2?'🟡 Средний':'🟢 Низкий');
+                const status = props.is_done ? '✅ Выполнена' : '⏳ Не выполнена';
+                alert(`Задача: ${e.title}\nОписание: ${props.description || '—'}\nДата: ${due}\nПриоритет: ${priorityText}\nКатегория: ${props.category}\nСтатус: ${status}`);
+            },
+            firstDay: 1
+        });
+        calendar.render();
+    });
+</script>
+{% endblock %}

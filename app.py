@@ -9,8 +9,9 @@ from apscheduler.schedulers.background import BackgroundScheduler
 import os
 import atexit
 from dotenv import load_dotenv
-load_dotenv()
 
+
+load_dotenv()
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-key-change-me')
@@ -248,7 +249,7 @@ def habits():
         'домашние дела': ['Уборка', 'Стирка', 'Приготовить еду', 'Полив цветов'],
         'здоровье': ['Прогулка', 'Здоровый завтрак', 'Вода 2л', 'Сон 8ч']
     }
-    return render_template('habits.html', habits=user_habits, categories=categories)
+    return render_template('habits.html', habits=user_habits, categories=categories, today=date.today())
 
 
 @app.route('/add_habit_predefined', methods=['POST'])
@@ -348,7 +349,6 @@ def habits_stats():
     end_date = date.today()
     start_date = end_date - timedelta(days=6)
 
-    # ---- Статистика привычек ----
     habit_stats = []
     for i in range(7):
         day = start_date + timedelta(days=i)
@@ -366,7 +366,6 @@ def habits_stats():
     habit_missed = (total_habits * 7) - total_habit_completed if total_habits > 0 else 0
     habit_percent = (total_habit_completed / (total_habits * 7) * 100) if total_habits > 0 else 0
 
-    # ---- Статистика задач ----
     task_stats = []
     for i in range(7):
         day = start_date + timedelta(days=i)
@@ -387,7 +386,6 @@ def habits_stats():
     task_not_done = total_tasks - total_tasks_done if total_tasks > 0 else 0
     task_percent = (total_tasks_done / total_tasks * 100) if total_tasks > 0 else 0
 
-    # ---- Статистика таймера ----
     study_stats = []
     for i in range(7):
         day = start_date + timedelta(days=i)
@@ -707,9 +705,9 @@ def api_unread_count():
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = 'aizp.375@gmail.com'
+app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME', '')
 app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD', '')
-app.config['MAIL_DEFAULT_SENDER'] = 'your-email@gmail.com'
+app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_DEFAULT_SENDER', '')
 
 mail = Mail(app)
 
@@ -794,7 +792,7 @@ def check_habits_evening():
             )
 
 
-# Планировщик — стартуем только в основном процессе (защита от двойного старта при debug=True)
+# Планировщик — стартуем только в основном процессе
 if os.environ.get('WERKZEUG_RUN_MAIN') == 'true' or not app.debug:
     scheduler = BackgroundScheduler()
     scheduler.add_job(check_deadlines, 'interval', hours=1)
@@ -802,6 +800,7 @@ if os.environ.get('WERKZEUG_RUN_MAIN') == 'true' or not app.debug:
     scheduler.add_job(check_habits_evening, 'interval', hours=1)
     scheduler.start()
     atexit.register(lambda: scheduler.shutdown())
+
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)

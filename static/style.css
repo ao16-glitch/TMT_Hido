@@ -1,6 +1,11 @@
 /* Основные стили */
 body {
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+   background-image: url('/static/images/moritz-kindler-mGFHA_0TWnA-unsplash.webp');
+    background-size: cover;        /* картинка заполняет весь экран */
+    background-position: center;   /* центрируем */
+    background-attachment: fixed;  /* фон не двигается при скролле */
+    background-repeat: no-repeat;  /* не повторять */
+    background-color: #f5f7fa;     /* fallback, если картинка не загрузилась */
     min-height: 100vh;
     padding-bottom: 50px;
 }
@@ -13,6 +18,7 @@ body {
 .todo-card {
     transition: all 0.3s ease;
     border-left: 4px solid #6c757d;
+    animation: fadeIn 0.3s ease-out;
 }
 
 .todo-card:hover {
@@ -291,4 +297,17 @@ body {
         font-size: 2.5rem;
         padding: 12px;
     }
+/*CSS animations*/
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.todo-card {
+    animation: fadeIn 0.3s ease-out;
+}
+
+.list-item {
+    animation: fadeIn 0.3s ease-out;
+}
 }

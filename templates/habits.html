@@ -19,19 +19,43 @@
                                 <li class="list-group-item">
                                     <div class="row align-items-center">
                                         <div class="col-md-5 mb-2 mb-md-0">
-                                            <strong>{{ habit.title }}</strong><br>
+                                            <!-- Название + Lottie рядом -->
+                                            <div class="d-flex align-items-center gap-2">
+                                                <strong>{{ habit.title }}</strong>
+
+                                                {% set completed = habit.completions | selectattr('date', 'equalto', today) | list | length > 0 %}
+                                                {% if completed %}
+                                                <dotlottie-player
+                                                    src="{{ url_for('static', filename='animations/success.lottie') }}"
+                                                    background="transparent"
+                                                    speed="1"
+                                                    style="width: 32px; height: 32px; flex-shrink: 0;"
+                                                    autoplay>
+                                                </dotlottie-player>
+                                                {% endif %}
+                                            </div>
+
                                             <small class="text-muted">{{ habit.category }} • {{ habit.difficulty }} • {{ habit.period }}</small>
                                         </div>
                                         <div class="col-md-7">
-                                            <form method="POST" action="{{ url_for('complete_habit', habit_id=habit.id) }}" class="row g-2 align-items-center">
+                                            <form method="POST"
+                                                  action="{{ url_for('complete_habit', habit_id=habit.id) }}"
+                                                  class="row g-2 align-items-center">
                                                 <div class="col-sm-6 col-md-5">
                                                     <input type="text" name="note" placeholder="Заметка" class="form-control form-control-sm">
                                                 </div>
                                                 <div class="col-sm-4 col-md-4">
-                                                    <button type="submit" class="btn btn-sm btn-success w-100"><i class="bi bi-check-lg"></i> Выполнить</button>
+                                                    <!-- ЗВУК: onclick на кнопке -->
+                                                    <button type="submit"
+                                                            class="btn btn-sm btn-success w-100"
+                                                            onclick="playNotificationSound();">
+                                                        <i class="bi bi-check-lg"></i> Выполнить
+                                                    </button>
                                                 </div>
                                                 <div class="col-sm-2 col-md-3">
-                                                    <a href="{{ url_for('delete_habit', habit_id=habit.id) }}" class="btn btn-sm btn-outline-danger w-100" onclick="return confirm('Удалить привычку «{{ habit.title }}»?')">
+                                                    <a href="{{ url_for('delete_habit', habit_id=habit.id) }}"
+                                                       class="btn btn-sm btn-outline-danger w-100"
+                                                       onclick="return confirm('Удалить привычку «{{ habit.title }}»?')">
                                                         <i class="bi bi-trash"></i>
                                                     </a>
                                                 </div>
@@ -72,9 +96,12 @@
                         <div class="col-md-4"><input type="text" name="title" class="form-control" placeholder="Название" required></div>
                         <div class="col-md-3">
                             <select name="category" class="form-select">
-                                <option value="умные привычки">Умные привычки</option><option value="продуктивность">Продуктивность</option>
-                                <option value="личное развитие">Личное развитие</option><option value="спорт">Спорт</option>
-                                <option value="финансы">Финансы</option><option value="домашние дела">Домашние дела</option>
+                                <option value="умные привычки">Умные привычки</option>
+                                <option value="продуктивность">Продуктивность</option>
+                                <option value="личное развитие">Личное развитие</option>
+                                <option value="спорт">Спорт</option>
+                                <option value="финансы">Финансы</option>
+                                <option value="домашние дела">Домашние дела</option>
                                 <option value="здоровье">Здоровье</option>
                             </select>
                         </div>
@@ -87,8 +114,10 @@
                         </div>
                         <div class="col-md-2">
                             <select name="period" class="form-select">
-                                <option value="неделя">Неделя</option><option value="месяц">Месяц</option>
-                                <option value="3 месяца">3 месяца</option><option value="6 месяцев">6 месяцев</option>
+                                <option value="неделя">Неделя</option>
+                                <option value="месяц">Месяц</option>
+                                <option value="3 месяца">3 месяца</option>
+                                <option value="6 месяцев">6 месяцев</option>
                             </select>
                         </div>
                         <div class="col-md-1"><button type="submit" class="btn btn-success w-100">+</button></div>

@@ -74,9 +74,24 @@
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-start">
                                 <div class="d-flex align-items-start" style="flex:1;">
-                                    <a href="{{ url_for('toggle_todo', todo_id=todo.id) }}" class="status-btn me-3 {{ 'btn-success' if todo.is_done else 'btn-outline-secondary' }}">
+                                    <!-- ЗВУК: onclick на ссылке-toggle -->
+                                    <a href="{{ url_for('toggle_todo', todo_id=todo.id) }}" 
+                                       class="status-btn me-3 {{ 'btn-success' if todo.is_done else 'btn-outline-secondary' }}"
+                                       onclick="playNotificationSound();">
                                         <i class="bi {{ 'bi-check-lg' if todo.is_done else 'bi-circle' }}"></i>
                                     </a>
+
+                                    <!-- Lottie рядом с названием задачи (НЕ на корзине) -->
+                                    {% if todo.is_done %}
+                                    <dotlottie-player
+                                        src="{{ url_for('static', filename='animations/success.lottie') }}"
+                                        background="transparent"
+                                        speed="1"
+                                        style="width: 36px; height: 36px; margin-right: 10px; flex-shrink: 0;"
+                                        autoplay>
+                                    </dotlottie-player>
+                                    {% endif %}
+
                                     <div>
                                         <h5 class="mb-1 {{ 'text-decoration-line-through' if todo.is_done }}">{{ todo.title }}</h5>
                                         <span class="badge {% if todo.priority==1 %}bg-danger{% elif todo.priority==2 %}bg-warning{% else %}bg-info{% endif %}">{{ todo.category }}</span>
@@ -146,7 +161,7 @@
 <script>
     // Установка минимальной даты в поле выбора даты
     document.getElementById('dueDate').min = new Date().toISOString().split('T')[0];
-    
+
     // Закрытие модальных окон после сохранения
     document.querySelectorAll('form[action*="/edit/"]').forEach(form => {
         form.addEventListener('submit', () => {
